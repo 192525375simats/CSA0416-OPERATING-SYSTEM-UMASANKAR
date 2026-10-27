@@ -1,0 +1,66 @@
+#include <stdio.h>
+#include <string.h>
+#define MAX 50
+ 
+struct {
+    char dname[20];
+    char fname[MAX][20];
+    int fcnt;
+} dir;
+ 
+int find(char *n) {
+    for (int i = 0; i < dir.fcnt; i++)
+        if (strcmp(dir.fname[i], n) == 0) return i;
+    return -1;
+}
+ 
+int main() {
+    int ch, i;
+    char name[20];
+ 
+    printf("Enter name of directory: ");
+    scanf("%19s", dir.dname);
+    dir.fcnt = 0;
+ 
+    for (;;) {
+        printf("\n1.Create file  2.Delete file  3.Search file  4.Display files  5.Exit\nEnter choice: ");
+        if (scanf("%d", &ch) != 1) break;
+        switch (ch) {
+        case 1:
+            printf("Enter file name: ");
+            scanf("%19s", name);
+            if (find(name) >= 0) printf("File %s already exists\n", name);
+            else if (dir.fcnt == MAX) printf("Directory is full\n");
+            else { strcpy(dir.fname[dir.fcnt++], name); printf("File %s created\n", name); }
+            break;
+        case 2:
+            printf("Enter file name to delete: ");
+            scanf("%19s", name);
+            i = find(name);
+            if (i < 0) printf("File %s not found\n", name);
+            else {
+                for (; i < dir.fcnt - 1; i++) strcpy(dir.fname[i], dir.fname[i + 1]);
+                dir.fcnt--;
+                printf("File %s deleted\n", name);
+            }
+            break;
+        case 3:
+            printf("Enter file name to search: ");
+            scanf("%19s", name);
+            i = find(name);
+            if (i < 0) printf("File %s not found\n", name);
+            else printf("File %s found at position %d\n", name, i + 1);
+            break;
+        case 4:
+            if (dir.fcnt == 0) printf("Directory %s is empty\n", dir.dname);
+            else {
+                printf("Files in directory %s:\n", dir.dname);
+                for (i = 0; i < dir.fcnt; i++) printf("  %d. %s\n", i + 1, dir.fname[i]);
+            }
+            break;
+        case 5: return 0;
+        default: printf("Invalid choice\n");
+        }
+    }
+    return 0;
+}
