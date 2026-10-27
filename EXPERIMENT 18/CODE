@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <pthread.h>
+#include <semaphore.h>
+#include <unistd.h>
+ 
+#define N 5
+ 
+int buffer[N], in = 0, out = 0, items;
+sem_t empty, full, mutex;
+ 
+void *producer(void *arg) {
+    for (int i = 1; i <= items; i++) {
+        sem_wait(&empty);             /* wait for a free slot   */
+        sem_wait(&mutex);             /* enter critical section */
+        buffer[in] = i;
+        printf("Producer produced item %d at slot %d\n", i, in);
+        in = (in + 1) % N;
+        sem_post(&mutex);
+        sem_post(&full);              /* one more filled slot   */
+        usleep(100000);
+    }
+    return NULL;
+}
+ 
+void *consumer(void *arg) {
+    for (int i = 1; i <= items; i++) {
+        sem_wait(&full);              /* wait for a filled slot */
+        sem_wait(&mutex);
+        int item = buffer[out];
+        printf("    Consumer consumed item %d from slot %d\n", item, out);
+        out = (out + 1) % N;
+        sem_post(&mutex);
+        sem_post(&empty);             /* one more free slot     */
+        usleep(250000);
+    }
+    return NULL;
+}
+ 
+int main() {
+    pthread_t p, c;
+    printf("Enter number of items to produce: ");
+    scanf("%d", &items);
+ 
+    sem_init(&empty, 0, N);   /* N empty slots initially */
+    sem_init(&full, 0, 0);    /* no filled slots         */
+    sem_init(&mutex, 0, 1);   /* binary semaphore        */
+ 
+    pthread_create(&p, NULL, producer, NULL);
+    pthread_create(&c, NULL, consumer, NULL);
+    pthread_join(p, NULL);
+    pthread_join(c, NULL);
+ 
+    sem_destroy(&empty);
+    sem_destroy(&full);
+    sem_destroy(&mutex);
+    printf("All %d items produced and consumed.\n", items);
+    return 0;
+}
+ 
