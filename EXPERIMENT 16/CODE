@@ -1,0 +1,88 @@
+#include <stdio.h>
+#include <string.h>
+ 
+#define FILENAME "employee.dat"
+#define MAXID 1000
+ 
+typedef struct {
+    int id;
+    char name[30];
+    float salary;
+    int used;
+} Emp;
+ 
+FILE *fp;
+ 
+int readrec(int id, Emp *e) {
+    memset(e, 0, sizeof(Emp));
+    fseek(fp, (long)(id - 1) * sizeof(Emp), SEEK_SET);
+    if (fread(e, sizeof(Emp), 1, fp) != 1) return 0;
+    return e->used;
+}
+void writerec(int id, Emp *e) {
+    fseek(fp, (long)(id - 1) * sizeof(Emp), SEEK_SET);
+    fwrite(e, sizeof(Emp), 1, fp);
+    fflush(fp);
+}
+ 
+int main() {
+    int ch, id;
+    Emp e;
+ 
+    fp = fopen(FILENAME, "rb+");
+    if (!fp) fp = fopen(FILENAME, "wb+");
+    if (!fp) { perror("fopen"); return 1; }
+ 
+    for (;;) {
+        printf("\n1.Add  2.Search  3.Update salary  4.Delete  5.Display all  6.Exit\nEnter choice: ");
+        if (scanf("%d", &ch) != 1) break;
+        switch (ch) {
+        case 1:
+            printf("Enter employee id (1-%d): ", MAXID);
+            scanf("%d", &id);
+            if (id < 1 || id > MAXID) { printf("Invalid id\n"); break; }
+            if (readrec(id, &e)) { printf("Employee %d already exists\n", id); break; }
+            memset(&e, 0, sizeof e);
+            e.id = id;
+            printf("Enter name and salary: ");
+            scanf("%29s %f", e.name, &e.salary);
+            e.used = 1;
+            writerec(id, &e);
+            printf("Record added\n");
+            break;
+        case 2:
+            printf("Enter employee id: ");
+            scanf("%d", &id);
+            if (id < 1 || id > MAXID || !readrec(id, &e)) printf("Employee %d not found\n", id);
+            else printf("ID: %d  Name: %s  Salary: %.2f\n", e.id, e.name, e.salary);
+            break;
+        case 3:
+            printf("Enter employee id: ");
+            scanf("%d", &id);
+            if (id < 1 || id > MAXID || !readrec(id, &e)) { printf("Employee %d not found\n", id); break; }
+            printf("Enter new salary: ");
+            scanf("%f", &e.salary);
+            writerec(id, &e);
+            printf("Record updated\n");
+            break;
+        case 4:
+            printf("Enter employee id: ");
+            scanf("%d", &id);
+            if (id < 1 || id > MAXID || !readrec(id, &e)) { printf("Employee %d not found\n", id); break; }
+            e.used = 0;
+            writerec(id, &e);
+            printf("Record deleted\n");
+            break;
+        case 5:
+            printf("%-6s %-20s %s\n", "ID", "Name", "Salary");
+            rewind(fp);
+            while (fread(&e, sizeof(Emp), 1, fp) == 1)
+                if (e.used) printf("%-6d %-20s %.2f\n", e.id, e.name, e.salary);
+            break;
+        case 6: fclose(fp); return 0;
+        default: printf("Invalid choice\n");
+        }
+    }
+    fclose(fp);
+    return 0;
+}
