@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <pthread.h>
+ 
+#define MAXT 50
+ 
+long counter = 0;
+int increments;
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+ 
+void *worker(void *arg) {
+    int id = *(int *)arg;
+    for (int i = 0; i < increments; i++) {
+        pthread_mutex_lock(&lock);      /* entry section    */
+        counter++;                      /* critical section */
+        pthread_mutex_unlock(&lock);    /* exit section     */
+    }
+    printf("Thread %d finished its %d increments\n", id, increments);
+    return NULL;
+}
+ 
+int main() {
+    int nthreads, ids[MAXT];
+    pthread_t t[MAXT];
+ 
+    printf("Enter number of threads (max %d): ", MAXT);
+    scanf("%d", &nthreads);
+    printf("Enter number of increments per thread: ");
+    scanf("%d", &increments);
+    if (nthreads < 1 || nthreads > MAXT) { printf("Invalid thread count\n"); return 1; }
+ 
+    for (int i = 0; i < nthreads; i++) {
+        ids[i] = i + 1;
+        pthread_create(&t[i], NULL, worker, &ids[i]);
+    }
+    for (int i = 0; i < nthreads; i++) pthread_join(t[i], NULL);
+ 
+    printf("Expected counter value = %ld\n", (long)nthreads * increments);
+    printf("Actual   counter value = %ld\n", counter);
+    printf(counter == (long)nthreads * increments ? "Mutex ensured mutual exclusion.\n"
+                                                  : "Race condition detected!\n");
+    pthread_mutex_destroy(&lock);
+    return 0;
+}
