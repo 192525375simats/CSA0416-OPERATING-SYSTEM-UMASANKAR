@@ -1,50 +1,91 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #define DISK_SIZE 200
+
 int main(void) {
-    int n, head, seekTime = 0, i, j, temp;
+    int n;
+    int head;
+    int initialHead;
+    int seekTime = 0;
+    int i;
+    int j;
+    int temp;
+    int firstRightRequest;
+
     printf("Enter the number of disk requests: ");
     scanf("%d", &n);
-    if (n <= 0) { printf("Number of requests must be positive.\n"); return 1; }
+
+    if (n <= 0) {
+        printf("Number of requests must be positive.\n");
+        return 1;
+    }
+
     int requestQueue[n];
+
     printf("Enter the disk request queue (0 to %d): ", DISK_SIZE - 1);
     for (i = 0; i < n; i++) {
         scanf("%d", &requestQueue[i]);
+
         if (requestQueue[i] < 0 || requestQueue[i] >= DISK_SIZE) {
-            printf("Invalid track number.\n"); return 1;
+            printf("Invalid track number.\n");
+            return 1;
         }
     }
+
     printf("Enter the initial position of the disk head: ");
     scanf("%d", &head);
-    if (head < 0 || head >= DISK_SIZE) { printf("Invalid initial head position.\n"); return 1; }
-    for (i = 0; i < n - 1; i++)
-        for (j = i + 1; j < n; j++)
+
+    if (head < 0 || head >= DISK_SIZE) {
+        printf("Invalid initial head position.\n");
+        return 1;
+    }
+
+    initialHead = head;
+
+    for (i = 0; i < n - 1; i++) {
+        for (j = i + 1; j < n; j++) {
             if (requestQueue[i] > requestQueue[j]) {
-                temp = requestQueue[i]; requestQueue[i] = requestQueue[j]; requestQueue[j] = temp;
+                temp = requestQueue[i];
+                requestQueue[i] = requestQueue[j];
+                requestQueue[j] = temp;
             }
+        }
+    }
+
+    firstRightRequest = 0;
+    while (firstRightRequest < n &&
+           requestQueue[firstRightRequest] < initialHead) {
+        firstRightRequest++;
+    }
+
     printf("\nC-SCAN Disk Scheduling\n");
     printf("Head Movement Sequence: %d", head);
-    for (i = 0; i < n; i++) {
-        if (requestQueue[i] >= head) {
+
+    for (i = firstRightRequest; i < n; i++) {
+        seekTime += abs(head - requestQueue[i]);
+        head = requestQueue[i];
+        printf(" -> %d", head);
+    }
+
+    if (firstRightRequest > 0) {
+        seekTime += (DISK_SIZE - 1) - head;
+        head = DISK_SIZE - 1;
+        printf(" -> %d", head);
+
+        seekTime += DISK_SIZE - 1;
+        head = 0;
+        printf(" -> %d", head);
+
+        for (i = 0; i < firstRightRequest; i++) {
             seekTime += abs(head - requestQueue[i]);
             head = requestQueue[i];
             printf(" -> %d", head);
         }
     }
-    seekTime += (DISK_SIZE - 1) - head;
-    head = DISK_SIZE - 1;
-    printf(" -> %d", head);
-    seekTime += DISK_SIZE - 1;
-    head = 0;
-    printf(" -> %d", head);
-    for (i = 0; i < n; i++) {
-        if (requestQueue[i] < requestQueue[0] || requestQueue[i] < head) {
-            seekTime += abs(head - requestQueue[i]);
-            head = requestQueue[i];
-            printf(" -> %d", head);
-        }
-    }
+
     printf("\nTotal Seek Time: %d\n", seekTime);
     printf("Average Seek Time: %.2f\n", (float)seekTime / n);
+
     return 0;
 }
