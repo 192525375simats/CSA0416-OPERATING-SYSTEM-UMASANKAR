@@ -1,4 +1,32 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-int main(){int fd=open("sample.txt",O_CREAT|O_WRONLY,0644);if(fd<0){perror("open");return 1;}write(fd,"Operating Systems Lab\\n",23);close(fd);fd=open("sample.txt",O_RDONLY);char b[100]={0};int n=read(fd,b,99);if(n>0)printf("%s",b);close(fd);return 0;}
+#include <sys/types.h>
+#include <sys/stat.h>
+int main(void) {
+    int fd;
+    char buffer[100] = {0};
+    ssize_t bytesRead;
+    fd = creat("sample.txt", S_IRWXU);
+    if (fd == -1) { perror("creat"); return 1; }
+    printf("File sample.txt created successfully.\n");
+    close(fd);
+    fd = open("sample.txt", O_WRONLY | O_APPEND);
+    if (fd == -1) { perror("open for writing"); return 1; }
+    if (write(fd, "Hello, World!\n", 14) == -1) {
+        perror("write"); close(fd); return 1;
+    }
+    printf("Data written to sample.txt.\n");
+    close(fd);
+    fd = open("sample.txt", O_RDONLY);
+    if (fd == -1) { perror("open for reading"); return 1; }
+    bytesRead = read(fd, buffer, sizeof(buffer) - 1);
+    if (bytesRead == -1) { perror("read"); close(fd); return 1; }
+    buffer[bytesRead] = '\0';
+    printf("File content:\n%s", buffer);
+    close(fd);
+    if (remove("sample.txt") == 0) printf("File deleted successfully.\n");
+    else perror("remove");
+    return 0;
+}

@@ -1,2 +1,48 @@
 #include <stdio.h>
-int main(){int b[]={100,500,200,300,600},p[]={212,417,112,426};for(int i=0;i<4;i++){int k=-1;for(int j=0;j<5;j++)if(b[j]>=p[i]&&(k<0||b[j]<b[k]))k=j;if(k>=0){printf("Process %d -> Block %d\\n",i+1,k+1);b[k]-=p[i];}else printf("Process %d not allocated\\n",i+1);}return 0;}
+#define MAX_MEMORY 1000
+int memory[MAX_MEMORY];
+void initializeMemory(void) {
+    int i;
+    for (i = 0; i < MAX_MEMORY; i++) memory[i] = -1;
+}
+void displayMemory(void) {
+    int i = 0;
+    printf("\nMemory Status:\n");
+    while (i < MAX_MEMORY) {
+        if (memory[i] == -1) {
+            int start = i;
+            while (i < MAX_MEMORY && memory[i] == -1) i++;
+            printf("Free block: %d - %d (%d units)\n", start, i - 1, i - start);
+        } else {
+            int process = memory[i], start = i;
+            while (i < MAX_MEMORY && memory[i] == process) i++;
+            printf("Process %d: %d - %d\n", process, start, i - 1);
+        }
+    }
+}
+void allocateBestFit(int processId, int size) {
+    int i = 0, bestStart = -1, bestSize = MAX_MEMORY + 1;
+    while (i < MAX_MEMORY) {
+        if (memory[i] == -1) {
+            int start = i;
+            while (i < MAX_MEMORY && memory[i] == -1) i++;
+            if (i - start >= size && i - start < bestSize) {
+                bestStart = start; bestSize = i - start;
+            }
+        } else i++;
+    }
+    if (bestStart == -1) {
+        printf("Process %d cannot be allocated.\n", processId); return;
+    }
+    for (i = bestStart; i < bestStart + size; i++) memory[i] = processId;
+    printf("Process %d allocated from %d to %d using Best Fit.\n",
+           processId, bestStart, bestStart + size - 1);
+}
+int main(void) {
+    initializeMemory();
+    allocateBestFit(1, 200);
+    allocateBestFit(2, 300);
+    allocateBestFit(3, 100);
+    displayMemory();
+    return 0;
+}

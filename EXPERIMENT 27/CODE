@@ -1,3 +1,12 @@
 #include <stdio.h>
 #include <dirent.h>
-int main(){DIR*d=opendir(".");if(!d){perror("opendir");return 1;}struct dirent*e;while((e=readdir(d)))puts(e->d_name);closedir(d);return 0;}
+int main(void) {
+    DIR *directory;
+    struct dirent *entry;
+    directory = opendir(".");
+    if (directory == NULL) { perror("Unable to open directory"); return 1; }
+    printf("Files and directories in current directory:\n");
+    while ((entry = readdir(directory)) != NULL) printf("%s\n", entry->d_name);
+    closedir(directory);
+    return 0;
+}

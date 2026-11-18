@@ -1,5 +1,24 @@
 #include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
+#include <stdlib.h>
 #include <sys/stat.h>
-int main(){char*name="file.txt";int f=open(name,O_CREAT|O_WRONLY,0644);if(f<0){perror("open");return 1;}write(f,"Permission demo\\n",17);close(f);if(chmod(name,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)){perror("chmod");return 1;}struct stat s;if(!stat(name,&s))printf("Permissions changed. Mode: %04o\\n",s.st_mode&0777);return 0;}
+int main(void) {
+    char filename[] = "file.txt";
+    int newPermissions;
+    struct stat fileInfo;
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) { perror("Unable to create file"); return 1; }
+    fprintf(file, "File permission demonstration.\n");
+    fclose(file);
+    printf("File created successfully.\n");
+    if (stat(filename, &fileInfo) == 0)
+        printf("Current permissions: %o\n", fileInfo.st_mode & 0777);
+    newPermissions = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+    if (chmod(filename, newPermissions) == 0)
+        printf("File permissions changed successfully.\n");
+    else { perror("chmod"); return 1; }
+    if (stat(filename, &fileInfo) == 0)
+        printf("Updated permissions: %o\n", fileInfo.st_mode & 0777);
+    printf("\nLinux permission commands:\n");
+    printf("ls -l file.txt\nchmod g+w file.txt\nchown username file.txt\nchgrp groupname file.txt\n");
+    return 0;
+}

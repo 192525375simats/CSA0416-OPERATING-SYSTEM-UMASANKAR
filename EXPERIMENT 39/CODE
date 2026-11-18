@@ -1,3 +1,50 @@
 #include <stdio.h>
 #include <stdlib.h>
-int main(){int q[]={98,183,37,122,14,124,65,67},h=53,t=0;for(int i=0;i<8;i++)for(int j=i+1;j<8;j++)if(q[i]>q[j]){int x=q[i];q[i]=q[j];q[j]=x;}printf("Head: %d",h);for(int i=0;i<8;i++)if(q[i]>=h){t+=abs(h-q[i]);h=q[i];printf(" -> %d",h);}t+=199-h+199;h=0;printf(" -> 199 -> 0");for(int i=0;i<8;i++)if(q[i]<53){t+=abs(h-q[i]);h=q[i];printf(" -> %d",h);}printf("\\nTotal seek distance: %d\\n",t);return 0;}
+#define DISK_SIZE 200
+int main(void) {
+    int n, head, seekTime = 0, i, j, temp;
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &n);
+    if (n <= 0) { printf("Number of requests must be positive.\n"); return 1; }
+    int requestQueue[n];
+    printf("Enter the disk request queue (0 to %d): ", DISK_SIZE - 1);
+    for (i = 0; i < n; i++) {
+        scanf("%d", &requestQueue[i]);
+        if (requestQueue[i] < 0 || requestQueue[i] >= DISK_SIZE) {
+            printf("Invalid track number.\n"); return 1;
+        }
+    }
+    printf("Enter the initial position of the disk head: ");
+    scanf("%d", &head);
+    if (head < 0 || head >= DISK_SIZE) { printf("Invalid initial head position.\n"); return 1; }
+    for (i = 0; i < n - 1; i++)
+        for (j = i + 1; j < n; j++)
+            if (requestQueue[i] > requestQueue[j]) {
+                temp = requestQueue[i]; requestQueue[i] = requestQueue[j]; requestQueue[j] = temp;
+            }
+    printf("\nC-SCAN Disk Scheduling\n");
+    printf("Head Movement Sequence: %d", head);
+    for (i = 0; i < n; i++) {
+        if (requestQueue[i] >= head) {
+            seekTime += abs(head - requestQueue[i]);
+            head = requestQueue[i];
+            printf(" -> %d", head);
+        }
+    }
+    seekTime += (DISK_SIZE - 1) - head;
+    head = DISK_SIZE - 1;
+    printf(" -> %d", head);
+    seekTime += DISK_SIZE - 1;
+    head = 0;
+    printf(" -> %d", head);
+    for (i = 0; i < n; i++) {
+        if (requestQueue[i] < requestQueue[0] || requestQueue[i] < head) {
+            seekTime += abs(head - requestQueue[i]);
+            head = requestQueue[i];
+            printf(" -> %d", head);
+        }
+    }
+    printf("\nTotal Seek Time: %d\n", seekTime);
+    printf("Average Seek Time: %.2f\n", (float)seekTime / n);
+    return 0;
+}

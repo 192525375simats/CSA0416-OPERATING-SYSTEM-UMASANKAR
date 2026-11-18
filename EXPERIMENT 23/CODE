@@ -1,2 +1,46 @@
 #include <stdio.h>
-int main(){int b[]={100,500,200,300,600},p[]={212,417,112,426};for(int i=0;i<4;i++){int j;for(j=0;j<5&&b[j]<p[i];j++);if(j<5){printf("Process %d -> Block %d\\n",i+1,j+1);b[j]-=p[i];}else printf("Process %d not allocated\\n",i+1);}return 0;}
+#define MAX_MEMORY 1000
+int memory[MAX_MEMORY];
+void initializeMemory(void) {
+    int i;
+    for (i = 0; i < MAX_MEMORY; i++) memory[i] = -1;
+}
+void displayMemory(void) {
+    int i = 0;
+    printf("\nMemory Status:\n");
+    while (i < MAX_MEMORY) {
+        if (memory[i] == -1) {
+            int start = i;
+            while (i < MAX_MEMORY && memory[i] == -1) i++;
+            printf("Free block: %d - %d (%d units)\n", start, i - 1, i - start);
+        } else {
+            int process = memory[i], start = i;
+            while (i < MAX_MEMORY && memory[i] == process) i++;
+            printf("Process %d: %d - %d\n", process, start, i - 1);
+        }
+    }
+}
+void allocateFirstFit(int processId, int size) {
+    int i = 0, start = -1;
+    while (i < MAX_MEMORY) {
+        if (memory[i] == -1) {
+            int blockStart = i;
+            while (i < MAX_MEMORY && memory[i] == -1) i++;
+            if (i - blockStart >= size) { start = blockStart; break; }
+        } else i++;
+    }
+    if (start == -1) {
+        printf("Process %d cannot be allocated.\n", processId); return;
+    }
+    for (i = start; i < start + size; i++) memory[i] = processId;
+    printf("Process %d allocated from %d to %d using First Fit.\n",
+           processId, start, start + size - 1);
+}
+int main(void) {
+    initializeMemory();
+    allocateFirstFit(1, 200);
+    allocateFirstFit(2, 300);
+    allocateFirstFit(3, 100);
+    displayMemory();
+    return 0;
+}

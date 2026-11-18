@@ -1,3 +1,31 @@
 #include <stdio.h>
-#define F 3
-int main(){int r[]={7,0,1,2,0,3,0,4,2,3,0,3,2},a[F]={-1,-1,-1},p=0, faults=0;for(int i=0;i<13;i++){int hit=0;for(int j=0;j<F;j++)if(a[j]==r[i])hit=1;if(!hit){a[p]=r[i];p=(p+1)%F;faults++;}printf("%d: ",r[i]);for(int j=0;j<F;j++)printf("%d ",a[j]);puts(hit?"Hit":"Fault");}printf("Page faults: %d\\n",faults);return 0;}
+#define MAX_FRAMES 3
+void printFrames(int frames[]) {
+    int i;
+    for (i = 0; i < MAX_FRAMES; i++)
+        if (frames[i] == -1) printf(" - "); else printf(" %d ", frames[i]);
+    printf("\n");
+}
+int main(void) {
+    int referenceString[] = {7,0,1,2,0,3,0,4,2,3,0,3,2};
+    int n = sizeof(referenceString) / sizeof(referenceString[0]);
+    int frames[MAX_FRAMES] = {-1,-1,-1};
+    int pointer = 0, pageFaults = 0, i, j, found;
+    printf("Reference String: ");
+    for (i = 0; i < n; i++) printf("%d ", referenceString[i]);
+    printf("\n\nFIFO Page Replacement:\n");
+    for (i = 0; i < n; i++) {
+        found = 0;
+        for (j = 0; j < MAX_FRAMES; j++)
+            if (frames[j] == referenceString[i]) { found = 1; break; }
+        if (!found) {
+            frames[pointer] = referenceString[i];
+            pointer = (pointer + 1) % MAX_FRAMES;
+            pageFaults++;
+            printf("Page %d -> ", referenceString[i]);
+            printFrames(frames);
+        } else printf("Page %d -> Hit\n", referenceString[i]);
+    }
+    printf("\nTotal Page Faults: %d\n", pageFaults);
+    return 0;
+}

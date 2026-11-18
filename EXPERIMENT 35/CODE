@@ -1,2 +1,44 @@
 #include <stdio.h>
-int main(){int index[]={5,12,19,26};puts("Indexed File Allocation");for(int i=0;i<4;i++)printf("File block %d -> disk block %d\\n",i,index[i]);return 0;}
+#define MAX_BLOCKS 100
+struct Block { int blockNumber; char data[256]; };
+int main(void) {
+    FILE *file;
+    struct Block block;
+    long indexBlock[MAX_BLOCKS] = {0};
+    int blockNumber;
+    file = fopen("indexed_file.dat", "wb+");
+    if (file == NULL) { perror("Unable to create file"); return 1; }
+    printf("Enter blocks (enter 0 as block number to finish):\n");
+    while (1) {
+        printf("Block Number (1-%d): ", MAX_BLOCKS - 1);
+        if (scanf("%d", &block.blockNumber) != 1) break;
+        if (block.blockNumber == 0) break;
+        if (block.blockNumber < 1 || block.blockNumber >= MAX_BLOCKS) {
+            printf("Invalid block number.\n"); continue;
+        }
+        if (indexBlock[block.blockNumber] != 0) {
+            printf("Block already exists.\n"); continue;
+        }
+        printf("Data: ");
+        scanf(" %255[^\n]", block.data);
+        indexBlock[block.blockNumber] = ftell(file) + 1;
+        if (fwrite(&block, sizeof(block), 1, file) != 1) {
+            perror("fwrite"); fclose(file); return 1;
+        }
+    }
+    while (1) {
+        printf("Enter block number to read (0 to exit): ");
+        if (scanf("%d", &blockNumber) != 1) break;
+        if (blockNumber == 0) break;
+        if (blockNumber < 1 || blockNumber >= MAX_BLOCKS || indexBlock[blockNumber] == 0) {
+            printf("Block not found.\n"); continue;
+        }
+        if (fseek(file, indexBlock[blockNumber] - 1, SEEK_SET) != 0 ||
+            fread(&block, sizeof(block), 1, file) != 1) {
+            printf("Unable to read block.\n"); continue;
+        }
+        printf("Block Number: %d\nData: %s\n", block.blockNumber, block.data);
+    }
+    fclose(file);
+    return 0;
+}

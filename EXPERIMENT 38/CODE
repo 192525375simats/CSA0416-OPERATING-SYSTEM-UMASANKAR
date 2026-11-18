@@ -1,3 +1,45 @@
 #include <stdio.h>
 #include <stdlib.h>
-int main(){int q[]={98,183,37,122,14,124,65,67},h=53,t=0;for(int i=0;i<8;i++)for(int j=i+1;j<8;j++)if(q[i]>q[j]){int x=q[i];q[i]=q[j];q[j]=x;}printf("Head: %d",h);for(int i=0;i<8;i++)if(q[i]>=h){t+=abs(h-q[i]);h=q[i];printf(" -> %d",h);}t+=199-h;h=199;for(int i=7;i>=0;i--)if(q[i]<53){t+=abs(h-q[i]);h=q[i];printf(" -> %d",h);}printf("\\nTotal seek distance: %d\\n",t);return 0;}
+int main(void) {
+    int n, head, seekTime = 0, i, j, temp, start, end, direction = 1;
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &n);
+    if (n <= 0) { printf("Number of requests must be positive.\n"); return 1; }
+    int requestQueue[n];
+    printf("Enter the disk request queue:\n");
+    for (i = 0; i < n; i++) scanf("%d", &requestQueue[i]);
+    printf("Enter the initial position of the disk head: ");
+    scanf("%d", &head);
+    for (i = 0; i < n - 1; i++)
+        for (j = i + 1; j < n; j++)
+            if (requestQueue[i] > requestQueue[j]) {
+                temp = requestQueue[i]; requestQueue[i] = requestQueue[j]; requestQueue[j] = temp;
+            }
+    printf("\nSCAN Disk Scheduling\n");
+    printf("Head Movement Sequence: %d", head);
+    start = 0; end = n - 1;
+    while (start <= end) {
+        if (direction == 1) {
+            while (start <= end && requestQueue[start] < head) start++;
+            if (start <= end) {
+                seekTime += abs(head - requestQueue[start]);
+                head = requestQueue[start];
+                printf(" -> %d", head);
+                start++;
+            }
+            direction = -1;
+        } else {
+            while (end >= start && requestQueue[end] > head) end--;
+            if (end >= start) {
+                seekTime += abs(head - requestQueue[end]);
+                head = requestQueue[end];
+                printf(" -> %d", head);
+                end--;
+            }
+            direction = 1;
+        }
+    }
+    printf("\nTotal Seek Time: %d\n", seekTime);
+    printf("Average Seek Time: %.2f\n", (float)seekTime / n);
+    return 0;
+}

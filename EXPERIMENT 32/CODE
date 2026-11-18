@@ -1,3 +1,39 @@
 #include <stdio.h>
-#define F 3
-int main(){int r[]={7,0,1,2,0,3,0,4,2,3,0,3,2},a[F]={-1,-1,-1},t[F]={0},faults=0;for(int i=0;i<13;i++){int k=-1;for(int j=0;j<F;j++)if(a[j]==r[i])k=j;if(k<0){k=0;for(int j=0;j<F;j++)if(a[j]<0){k=j;break;}else if(t[j]<t[k])k=j;a[k]=r[i];faults++;}t[k]=i;printf("%d: ",r[i]);for(int j=0;j<F;j++)printf("%d ",a[j]);puts("");}printf("Page faults: %d\\n",faults);return 0;}
+#define MAX_FRAMES 3
+void printFrames(int frames[]) {
+    int i;
+    for (i = 0; i < MAX_FRAMES; i++)
+        if (frames[i] == -1) printf(" - "); else printf(" %d ", frames[i]);
+    printf("\n");
+}
+int main(void) {
+    int referenceString[] = {7,0,1,2,0,3,0,4,2,3,0,3,2};
+    int n = sizeof(referenceString) / sizeof(referenceString[0]);
+    int frames[MAX_FRAMES] = {-1,-1,-1}, lastUsed[MAX_FRAMES] = {0,0,0};
+    int pageFaults = 0, i, j, found, position;
+    printf("Reference String: ");
+    for (i = 0; i < n; i++) printf("%d ", referenceString[i]);
+    printf("\n\nLRU Page Replacement:\n");
+    for (i = 0; i < n; i++) {
+        found = 0; position = -1;
+        for (j = 0; j < MAX_FRAMES; j++)
+            if (frames[j] == referenceString[i]) { found = 1; position = j; break; }
+        if (found) {
+            lastUsed[position] = i + 1;
+            printf("Page %d -> Hit\n", referenceString[i]);
+        } else {
+            position = 0;
+            for (j = 0; j < MAX_FRAMES; j++) {
+                if (frames[j] == -1) { position = j; break; }
+                if (lastUsed[j] < lastUsed[position]) position = j;
+            }
+            frames[position] = referenceString[i];
+            lastUsed[position] = i + 1;
+            pageFaults++;
+            printf("Page %d -> ", referenceString[i]);
+            printFrames(frames);
+        }
+    }
+    printf("\nTotal Page Faults: %d\n", pageFaults);
+    return 0;
+}

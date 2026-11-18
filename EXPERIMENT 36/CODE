@@ -1,3 +1,45 @@
 #include <stdio.h>
-typedef struct{int block,next;}Node;
-int main(){Node a[]={{4,1},{9,2},{16,3},{23,-1}};int p=0;puts("Linked File Allocation");while(p!=-1){printf("Data block %d\\n",a[p].block);p=a[p].next;}puts("End of file");return 0;}
+#include <stdlib.h>
+#include <string.h>
+struct Block { char data[256]; struct Block *next; };
+int main(void) {
+    struct Block *firstBlock = NULL, *lastBlock = NULL;
+    struct Block *newBlock, *currentBlock;
+    int blockCount = 0, blockNumber, i;
+    char data[256], choice;
+    printf("Linked Allocation Simulation\n");
+    while (1) {
+        printf("\nW - Write a block\nR - Read a block\nQ - Quit\n");
+        printf("Enter your choice: ");
+        scanf(" %c", &choice);
+        if (choice == 'Q' || choice == 'q') break;
+        if (choice == 'W' || choice == 'w') {
+            printf("Enter data for the block: ");
+            scanf(" %255[^\n]", data);
+            newBlock = (struct Block *)malloc(sizeof(struct Block));
+            if (newBlock == NULL) { printf("Memory allocation failed.\n"); break; }
+            strcpy(newBlock->data, data);
+            newBlock->next = NULL;
+            if (firstBlock == NULL) { firstBlock = newBlock; lastBlock = newBlock; }
+            else { lastBlock->next = newBlock; lastBlock = newBlock; }
+            blockCount++;
+            printf("Block %d created successfully.\n", blockCount);
+        } else if (choice == 'R' || choice == 'r') {
+            printf("Enter block number to read (1-%d): ", blockCount);
+            scanf("%d", &blockNumber);
+            if (blockNumber < 1 || blockNumber > blockCount) {
+                printf("Invalid block number.\n"); continue;
+            }
+            currentBlock = firstBlock;
+            for (i = 1; i < blockNumber; i++) currentBlock = currentBlock->next;
+            printf("Block %d Data: %s\n", blockNumber, currentBlock->data);
+        } else printf("Invalid choice.\n");
+    }
+    currentBlock = firstBlock;
+    while (currentBlock != NULL) {
+        struct Block *nextBlock = currentBlock->next;
+        free(currentBlock);
+        currentBlock = nextBlock;
+    }
+    return 0;
+}

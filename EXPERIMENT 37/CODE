@@ -1,3 +1,23 @@
 #include <stdio.h>
 #include <stdlib.h>
-int main(){int q[]={98,183,37,122,14,124,65,67},h=53,t=0;printf("%d",h);for(int i=0;i<8;i++){t+=abs(h-q[i]);h=q[i];printf(" -> %d",h);}printf("\\nTotal seek time: %d\\nAverage: %.2f\\n",t,t/8.0);return 0;}
+int main(void) {
+    int n, head, seekTime = 0, i;
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &n);
+    if (n <= 0) { printf("Number of requests must be positive.\n"); return 1; }
+    int requestQueue[n];
+    printf("Enter the disk request queue:\n");
+    for (i = 0; i < n; i++) scanf("%d", &requestQueue[i]);
+    printf("Enter the initial position of the disk head: ");
+    scanf("%d", &head);
+    printf("\nFCFS Disk Scheduling\n");
+    printf("Head Movement Sequence: %d", head);
+    for (i = 0; i < n; i++) {
+        seekTime += abs(head - requestQueue[i]);
+        head = requestQueue[i];
+        printf(" -> %d", head);
+    }
+    printf("\nTotal Seek Time: %d\n", seekTime);
+    printf("Average Seek Time: %.2f\n", (float)seekTime / n);
+    return 0;
+}

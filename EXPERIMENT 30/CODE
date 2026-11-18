@@ -1,4 +1,22 @@
 #include <stdio.h>
 #include <pthread.h>
-void*work(void*x){puts("Inside the thread");return NULL;}
-int main(){pthread_t t;pthread_create(&t,NULL,work,NULL);puts("Main thread created worker");pthread_join(t,NULL);puts("Thread completed");return 0;}
+void *threadFunction(void *argument) {
+    printf("Inside the thread.\n");
+    pthread_exit(NULL);
+}
+int main(void) {
+    pthread_t thread;
+    if (pthread_create(&thread, NULL, threadFunction, NULL) != 0) {
+        perror("pthread_create"); return 1;
+    }
+    printf("Main thread is running.\n");
+    if (pthread_equal(thread, pthread_self()))
+        printf("Threads are equal.\n");
+    else
+        printf("Threads are not equal.\n");
+    if (pthread_join(thread, NULL) != 0) {
+        perror("pthread_join"); return 1;
+    }
+    printf("Child thread has completed.\n");
+    pthread_exit(NULL);
+}

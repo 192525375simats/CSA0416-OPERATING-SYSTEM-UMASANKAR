@@ -1,3 +1,37 @@
 #include <stdio.h>
-#define N 5
-int main(){int q[N],in=0,out=0,count=0,ch,item=1;for(;;){printf("\\n1 Produce 2 Consume 3 Exit: ");scanf("%d",&ch);if(ch==1){if(count==N)puts("Buffer full");else{q[in]=item;printf("Produced %d\\n",item++);in=(in+1)%N;count++;}}else if(ch==2){if(!count)puts("Buffer empty");else{printf("Consumed %d\\n",q[out]);out=(out+1)%N;count--;}}else if(ch==3)break;}return 0;}
+#include <stdlib.h>
+int mutex = 1;
+int full = 0;
+int empty = 10;
+int item = 0;
+void producer(void) {
+    --mutex; ++full; --empty; ++item;
+    printf("Producer produces item %d\n", item);
+    ++mutex;
+}
+void consumer(void) {
+    --mutex; --full; ++empty;
+    printf("Consumer consumes item %d\n", item);
+    --item; ++mutex;
+}
+int main(void) {
+    int choice;
+    while (1) {
+        printf("\n1. Producer\n2. Consumer\n3. Exit\n");
+        printf("Enter your choice: ");
+        if (scanf("%d", &choice) != 1) return 1;
+        switch (choice) {
+            case 1:
+                if (mutex == 1 && empty != 0) producer();
+                else printf("Buffer is full!\n");
+                break;
+            case 2:
+                if (mutex == 1 && full != 0) consumer();
+                else printf("Buffer is empty!\n");
+                break;
+            case 3: exit(0);
+            default: printf("Invalid choice.\n");
+        }
+    }
+    return 0;
+}
