@@ -1,0 +1,6 @@
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
+int main(){int f=open("foo.txt",O_CREAT|O_RDWR,0644);write(f,"Operating Systems",17);lseek(f,0,SEEK_SET);char b[32]={0};read(f,b,17);printf("Read: %s\\n",b);struct stat s;stat("foo.txt",&s);printf("Size: %ld\\n",(long)s.st_size);fcntl(f,F_SETFL,O_APPEND);close(f);DIR*d=opendir(".");struct dirent*e;while(d&&(e=readdir(d)))puts(e->d_name);if(d)closedir(d);return 0;}

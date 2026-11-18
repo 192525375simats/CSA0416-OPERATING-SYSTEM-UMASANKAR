@@ -1,0 +1,2 @@
+#include <stdio.h>
+int main(){FILE*f=fopen("example.txt","w");if(!f)return 1;fprintf(f,"Hello, World!\\nFile management example.\\n");fclose(f);f=fopen("example.txt","r");if(!f)return 1;char b[100];while(fgets(b,sizeof b,f))printf("%s",b);fclose(f);return 0;}

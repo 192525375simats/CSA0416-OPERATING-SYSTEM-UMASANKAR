@@ -1,0 +1,3 @@
+#include <stdio.h>
+#define F 3
+int main(){int r[]={7,0,1,2,0,3,0,4,2,3,0,3,2},a[F]={-1,-1,-1},t[F]={0},faults=0;for(int i=0;i<13;i++){int k=-1;for(int j=0;j<F;j++)if(a[j]==r[i])k=j;if(k<0){k=0;for(int j=0;j<F;j++)if(a[j]<0){k=j;break;}else if(t[j]<t[k])k=j;a[k]=r[i];faults++;}t[k]=i;printf("%d: ",r[i]);for(int j=0;j<F;j++)printf("%d ",a[j]);puts("");}printf("Page faults: %d\\n",faults);return 0;}
